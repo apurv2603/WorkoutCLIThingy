@@ -9,6 +9,8 @@ class ExerThing(cmd.Cmd):
     WORKOUT_DIR = None
     WORKOUT_FILEDIR = None
     WORKOUT_FNAME = None
+    EXER_NAME = None
+    UNIT = "pounds"
 
     def __init__(self):
         super().__init__()
@@ -24,13 +26,17 @@ class ExerThing(cmd.Cmd):
         my_intro += " Type help or ? to list commands."
         print(my_intro)
     
-    def promptLvl2(self):
+    def getPrompt(self):
+        if self.WORKOUT_FILEDIR is None:
+            return promptDefault + "> "
         lst = self.WORKOUT_FNAME.split(':')
         word2 = ""
         if len(lst) > 1:
             word2 = "*" +lst[-1].split(".")[0]
         else:
             word2 = self.WORKOUT_FNAME.split(".")[0]
+        if self.EXER_NAME is not None:
+            return f"{promptDefault}/{word2}/{self.EXER_NAME}> "
         return f"{promptDefault}/{word2}> "
     
     def do_init(self, arg):
@@ -66,11 +72,19 @@ class ExerThing(cmd.Cmd):
                 f.write(f"{local_name}\n")
             print(f"Started workout \"{local_name}\"!")
             self.WORKOUT_ABBR = user_title if user_title else dt
-            self.prompt = self.promptLvl2()
+            self.prompt = self.getPrompt()
     do_b = do_begin
 
     def do_continue(self, arg):
-        # Resume Exercise
+        # Resume Exercise if in Exercises, else resume Workout
+        if self.WORKOUT_FILEDIR is not None:
+            print("TODO FETCH FROM PARSER AND PRINT [i] exer[i]")
+            # TODO Display map, unless arg is a exername that is present
+            return
+        
+        # IF NOT IN A DIR AT ALL
+        if self.testDirIsNull():
+            return
         files = os.listdir(self.WORKOUT_DIR) if self.WORKOUT_DIR is not None else []
         N = len(files)
         if N == 0:
@@ -84,18 +98,33 @@ class ExerThing(cmd.Cmd):
         if choice.isdigit() and int(choice) in range(len(files)):
             self.WORKOUT_FILEDIR = os.path.join(self.WORKOUT_DIR, files[int(choice)])
             self.WORKOUT_FNAME = files[int(choice)]
-            self.prompt = self.promptLvl2()
+            self.prompt = self.getPrompt()
             print(f"Resumed workout \"{self.WORKOUT_FNAME}\"!")
         else:
             print("Continue Cancelled.")
     do_c = do_cont = do_continue
+
+    def do_list(self, arg):
+        # List workouts, If arg is a number, list that many most recent workouts
+        files = os.listdir(self.WORKOUT_DIR) if self.WORKOUT_DIR is not None else []
+        files.sort(key=lambda f: datetime.datetime.strptime((f.split(".")[0]).split(":")[0], "%m_%d_%Y"), reverse=True)
+        if arg.isdigit() and int(arg) in range(len(files)):
+            if int(arg) == 0:
+                return
+            print(" | ".join(files[:int(arg)]))
+        else:
+            print(" | ".join(files))
 
     def do_log(self, arg):
         # Begin log exercise
         if self.testDirIsNull() or self.testWorkoutIsNull():
             return
         exerName = parse_exer(arg)
-        print("Log ", exerName)
+        if exerName == "":
+            print("No exercise name provided, or invalid exercise name. Exercise names may only contain letters and dashes.")
+            return
+        self.EXER_NAME = exerName
+        self.prompt = self.getPrompt()
     
     def do_last(self, arg):
         # Get last case of exercise ARG[0]
@@ -124,16 +153,21 @@ class ExerThing(cmd.Cmd):
         # Get last ARG[0] workout, If Arg[0] is None, Arg = 0
         if self.testDirIsNull() or self.testWorkoutIsNull():
             return
-        num = parse_num(arg)
-        print("Summary, ", num)
+        # num = parse_num(arg)
+        with open(self.WORKOUT_FILEDIR, "r") as f:
+            lines = f.readlines()
+            print("".join(lines))
     do_sum = do_summary
     
     def do_exit(self, arg):
         # Take a step down in the hierarchy, or exit if at base level
-        if self.WORKOUT_FILEDIR is not None:
+        if self.EXER_NAME is not None:
+            self.EXER_NAME = None
+            print(f"Leaving Exercise {self.EXER_NAME}...")
+        elif self.WORKOUT_FILEDIR is not None:
             self.WORKOUT_FILEDIR = None
             self.WORKOUT_FNAME = None
-            self.prompt = promptDefault + "> "
+            self.prompt = self.getPrompt()
             print("Leaving Workout...")
         else:
             print("Exiting...")

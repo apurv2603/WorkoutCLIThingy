@@ -12,12 +12,13 @@ def parse_num(arg):
 def parse_exer(arg):
     exer = ""
     if arg:
-        argExer = arg.split(" ")[0]
-        try: 
-            exer = argExer.lower()
-        except Exception:
-            pass
+        argExer = arg.strip().replace(" ", "-").lower()
+        if is_valid_exer(argExer):
+            exer = argExer
     return exer
+
+def is_valid_exer(s):
+    return all(c.isalpha() or c == '-' for c in s) and len(s) > 0
 
 def parse_date(s):
     parts = s.split('_')
