@@ -1,5 +1,5 @@
 # Keywords:
--  `#`: Exercise name
+-  `# `: Exercise name
     - this will be a child of a root node
     - it can have `>` or `note` as children
 
@@ -17,11 +17,12 @@
     -it will have `>` as children which represents the metric for
     that set
 
-- `!`: Muscle group 
+- `#`: Muscle group
+    - Hashtag no space
     - no chilren is a leaf node 
     - only one muscle group per `!`
 
-- '$': Header Separator. (CHANGE?? - AJT)
-    - $ Name
-    - $$ Unit
-    - $$$ HH:MM Time
+- `$`: Header Separator. (CHANGE?? - AJT)
+    - `$` Name
+    - `$$` Unit
+    - `$$$` HH:MM Time
