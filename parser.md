@@ -21,4 +21,7 @@
     - no chilren is a leaf node 
     - only one muscle group per `!`
 
-
+- '$': Header Separator. (CHANGE?? - AJT)
+    - $ Name
+    - $$ Unit
+    - $$$ HH:MM Time

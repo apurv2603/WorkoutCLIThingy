@@ -67,9 +67,12 @@ class ExerThing(cmd.Cmd):
             return
         if doCreate.lower() == "y":
             self.WORKOUT_FNAME = local_name
-            self.WORKOUT_FILEDIR = os.path.join(self.WORKOUT_DIR, local_name + ".workout")     
+            self.WORKOUT_FILEDIR = os.path.join(self.WORKOUT_DIR, local_name + ".workout")
+            init_time = datetime.datetime.now().strftime("%H:%M")     
             with open(self.WORKOUT_FILEDIR, "w") as f:
-                f.write(f"{local_name}\n")
+                f.write(f"$ {local_name} ")
+                f.write(f"$$ {self.UNIT} ")
+                f.write(f"$$$ {init_time}\n")
             print(f"Started workout \"{local_name}\"!")
             self.WORKOUT_ABBR = user_title if user_title else dt
             self.prompt = self.getPrompt()
@@ -141,10 +144,12 @@ class ExerThing(cmd.Cmd):
             return
         arg0 = arg.strip().lower()
         if arg0 == "k" or arg0 == "kilo" or arg0 == "kilos":
-            print("Set to kilos")
+            print("Weight set to kilos")
+            self.UNIT = "kilos"
             return
         if arg0 == "p" or arg0 == "pound" or arg0 == "pounds":
-            print("Set to pounds")
+            print("Weight set to pounds")
+            self.UNIT = "pounds"
             return
         else:
             print("Unknown unit, use 'k/kilos' or 'p/pounds'")
