@@ -131,7 +131,6 @@ class ExerThing(cmd.Cmd):
                 f.write(f"$$ {self.UNIT_ABBR} ")
                 f.write(f"$$$ {init_time}\n")
                 f.write(f"\n")
-                f.write(f"// ")
             print(f"Started workout \"{local_name}\"!")
             self.WORKOUT_ABBR = user_title if user_title else dt
             self.updatePrompt()
@@ -423,15 +422,17 @@ class ExerThing(cmd.Cmd):
         with open(self.WORKOUT_FILEDIR, "r") as f:
             lines = f.readlines()
         spot = -1
-        find = ("# " + exerName)
+        find = "# " + exerName
         for i, line in enumerate(lines):
-            if find in line:
+            if line.startswith(find):
+                # print("Spot found at line " + str(i), "line content: " + line.strip())
                 spot = i
                 break
         if spot != -1:
             # Get to line to write at next
             while spot < len(lines) and (lines[spot] != "\n"): # lines[spot].startswith(SET_KEYWORD) or lines[spot].startswith("# ")
                 spot += 1
+                # print("Spot settled at line " + str(spot), "line content: " + lines[spot].strip())
         return spot
     
     def getNotesLines(self):
@@ -469,6 +470,8 @@ class ExerThing(cmd.Cmd):
         
         newLine = SET_KEYWORD + f" {reps} @ {weight} {self.UNIT_ABBR}\n"
         lines.insert(self.EXER_WRITE_AT, newLine)
+
+        self.EXER_WRITE_AT += 1
 
         with open(self.WORKOUT_FILEDIR, "w") as f:
             f.writelines(lines)

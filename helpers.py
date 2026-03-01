@@ -128,10 +128,10 @@ def summary(workout):
 
 def history(workouts: list[Workout], exercise: str):
     if not workouts:
-        print("no workouts found")
+        print("No workouts found")
         return
     if not exercise:
-        print("no exercise given")
+        print("No exercise given")
         return
     tables = []
     
@@ -177,10 +177,10 @@ def history(workouts: list[Workout], exercise: str):
 
 def last(workouts: list[Workout], exercise: str):
     if not workouts:
-        print("no workouts found")
+        print("No workouts found")
         return
     if not exercise:
-        print("no exercise given")
+        print("No exercise given")
         return
     for workout in reversed(workouts):
         for item in workout.items:
@@ -205,10 +205,10 @@ def last(workouts: list[Workout], exercise: str):
 
 def pr(workouts: list[Workout], exercise: str):
     if not workouts:
-        print("no workouts found")
+        print("No workouts found")
         return
     if not exercise:
-        print("no exercise given")
+        print("No exercise given")
         return
     pr = None
     pr_workout = None
@@ -232,34 +232,7 @@ def pr(workouts: list[Workout], exercise: str):
     else:
         print(f"No sets found for exercise: {exercise}")
 
-def pr(workouts: list[Workout], exercise: str):
-    if not workouts:
-        print("no workouts found")
-        return
-    if not exercise:
-        print("no exercise given")
-        return
-    pr = None
-    pr_workout = None
-    best_set = None 
-    t = Table(title="[bold underline]"+exercise+" PR[/bold underline]")
 
-    for workout in workouts:
-        for item in workout.items:
-            if isinstance(item, Exercise) and item.name == exercise:
-                for st in item.sets: 
-                    if pr is None or st.weight > pr:
-                        pr = st.weight
-                        pr_workout = workout
-                        best_set = st
-    if pr is not None:
-        t.add_column("Reps")
-        t.add_column("Weight")
-        t.add_row(str(best_set.reps), str(best_set.weight) + " " + best_set.unit)
-        print(t)
-        print(f"PR for {exercise} is {pr} {pr_workout.unit}, achieved on {pr_workout.date} at {pr_workout.time}")
-    else:
-        print(f"No sets found for exercise: {exercise}")
 
 def frequency(workout_dir):
     files = os.listdir(workout_dir)
