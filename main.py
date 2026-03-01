@@ -572,6 +572,7 @@ class ExerThing(cmd.Cmd):
             print(" - [cyan]pr <exercise_name>[/cyan]: Show all-time personal record for an exercise.")
             print(" - [cyan]frequency[/cyan]: Get frequency of your workouts.")
             print(" - [cyan]exit[/cyan]: Step back in hierarchy or exit.")
+            print(" - [cyan]render[/cyan]: Render a workout to HTML.")
             print(" - [cyan]// <...>[/cyan]: Adds following information as a note to the workout file.")
             print("Type 'help <command>' for more details on a specific command.")
         print("")
