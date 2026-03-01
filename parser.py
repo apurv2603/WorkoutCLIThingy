@@ -188,10 +188,11 @@ def parse(file_path: str) -> Workout:
 
         s = raw.strip()
 
-        # Notes: "note ..." or "note: ..."
         if s.lower().startswith("//"):
-            # Your classes do not store notes yet; ignore for now (per your current class set).
-            # If you add notes later, we can attach it to workout/exercise/superset here.
+            text = s[2:].strip('/ ')
+            text
+            if text:
+                workout.notes.append(Note(text))
             continue
 
         # Superset start
@@ -240,7 +241,6 @@ def parse(file_path: str) -> Workout:
             continue
         if s.startswith("//"):
             text = s[2:].strip()
-            # keep even empty notes if you want; usually better to skip empties
             if text:
                 workout.notes.append(Note(text))
             continue

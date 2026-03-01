@@ -24,3 +24,10 @@ useful functions:
 
 # Ignored commands
 - `muscles X.workout` prints the muscles groups used in session X
+
+# TODO
+- Notes working
+- Colors 
+- Calendar
+- Progress bar?
+- Dashboard / At a glance fxn

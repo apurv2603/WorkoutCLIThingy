@@ -29,6 +29,31 @@ W = "#f57b2a"
 PLUM = "#B33C86"
 TWI = "#990E4F"
 
+light_red = "#ff7f7f"
+light_orange = "#ffb347"
+light_yellow = "#ffff99"
+light_green = "#90ee90"
+
+def rep_to_color(reps):
+    if reps <= 1:
+        return light_red
+    elif reps <= 3:
+        return light_orange
+    elif reps <= 5:
+        return light_yellow
+    else:
+        return light_green
+
+def weight_to_color(weight, weight_max):
+    if weight <= 0.25 * weight_max:
+        return light_red
+    elif weight <= 0.5 * weight_max:
+        return light_orange
+    elif weight <= 0.75 * weight_max:
+        return light_yellow
+    else:
+        return light_green
+
 def parse_num(arg):
         num = 0
         if arg:
@@ -55,18 +80,26 @@ def parse_date(s):
     return datetime.strptime(f"{parts[0]}_{parts[1]}_{parts[2]}", "%m_%d_%y")
 
 def summary(workout):
-    header = f"[bold {PLUM}]{workout.name}[/bold {PLUM}]\n"
+    header = f"Title/Date: [bold {PLUM}]{workout.name}[/bold {PLUM}]\n"
     header += f"Start: [{TWI}]{workout.time}[/{TWI}]    Unit: [{TWI}]{workout.unit}[/{TWI}]\n"
     header += f"Exercises: [{X}]{len(workout.items)}[/{X}]"
     
     tables = []
     for ex in workout.items:
-        t = Table(title=ex.name) #this assumes items can only be regular exercises, not supersets.
+        t = Table(title= ex.name) #this assumes items can only be regular exercises, not supersets.
         t.add_column("#")
-        t.add_column("Reps")
+        t.add_column(f"Reps")
         t.add_column("Weight")
-        for i, set in enumerate(ex.sets):
-            t.add_row(str(i+1), str(set.reps), str(set.weight))
+        max_weight = max(st.weight for st in ex.sets) if ex.sets else 0
+
+        for i, st in enumerate(ex.sets):
+            repColor = rep_to_color(st.reps)
+            repStr = f"[{repColor}]{st.reps}[/{repColor}]"
+
+            weightColor = weight_to_color(st.weight, max(max_weight, st.weight))
+            weightStr = f"[{weightColor}]{st.weight}[/{weightColor}]"
+
+            t.add_row(str(i+1), repStr, weightStr)
         tables.append(t)
 
     st = Table(title="[bold underline]Exercise Summary[/bold underline]\n", show_header=False, show_edge=False, show_lines=False, box=None)
@@ -81,8 +114,17 @@ def summary(workout):
         if len(tableList) == 5 or i == len(tables) - 1:
             st.add_row(*tableList)
     
-    print(st)
-    print(Panel(header, title="Workout Summary", expand=False))
+    NotesPanel = Panel("\n".join([f"➤ [italic]{note.text}[/italic]" for note in workout.notes]), title="[bold]Notes[/bold]", border_style=W, expand=False)
+    SummaryPanel = Panel(header, title="Workout Summary", expand=False, border_style=X)
+    st_2 = Table(title="", show_header=False, show_edge=False, show_lines=False, box=None)
+    st_2.add_column()
+    st_2.add_column()
+    st_2.add_row(SummaryPanel, NotesPanel)
+    
+    print("")
+    print(st) # MAIN EXER TABLE
+    print(st_2)
+    print()
 
 def history(workouts: list[Workout], exercise: str):
     if not workouts:

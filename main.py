@@ -10,10 +10,10 @@ from rich.text import Text
 from parser import parse
 
 
-# IF MAC
+# Sometimes fixes mac autocomp. Sometimes breaks keyboard input.
 try:
     import readline
-    readline.parse_and_bind("bind ^I rl_complete")
+    # readline.parse_and_bind("bind ^I rl_complete")
 except ImportError:
     pass
 
@@ -40,7 +40,7 @@ class ExerThing(cmd.Cmd):
     UNIT_ABBR = "lbs"
 
     # doc_header = "Commands:"  # help header
-    # ruler = "="               # separator char in help
+    ruler = "="               # separator char in help
 
     def __init__(self):
         super().__init__()
@@ -51,19 +51,21 @@ class ExerThing(cmd.Cmd):
             self.WORKOUT_DIR = None
         self.WORKOUT_FILEDIR = None
         self.WORKOUT_FNAME = None
-        my_intro = "\nWelcome to ExerThing!"
-        my_intro += " Directory Init: ✅." if self.WORKOUT_DIR is not None else " Directory Init: ❌."
-        my_intro += " Type help or ? to list commands."
+        my_intro = "\n[orange3]Welcome to Exer[gold3]Thing[/gold3]![/orange3]"
+        my_intro += " [green]Directory Initialized.[/green]" if self.WORKOUT_DIR is not None else " [red]Directory Not Initialized.[/red]"
+        my_intro += " Type [cyan bold]help[/cyan bold] or [cyan bold]?[/cyan bold] to list commands."
         print("[bold]" +  my_intro + "[/bold]" )
     
     def default(self, line):
-        if line.startswith("ls") or line.startswith("dir") or line.startswith("cd") or line.startswith("pwd") or line.startswith("clear") or line.startswith("cat"):
+        if line.startswith("ls") or line.startswith("dir")  or line.startswith("pwd") or line.startswith("clear") or line.startswith("cat"):
             os.system(line)
             return
         # NOTES
         if line.startswith("//"):
             if self.addNotesLine(line[2:].strip()):
-                print("Added Note!")
+                print("[bold green]Added Note![/bold green]")
+            else:
+                print("[bold red]Failed to add note[/bold red]")
             return
         
         # LOG REPS AND WEIGHT
@@ -338,10 +340,10 @@ class ExerThing(cmd.Cmd):
             return True  # Returning True exits the loop
     do_EOF = do_done = do_d = do_q = do_exit
 
-    # def do_frequency(self):
-    #     pass
+    def do_frequency(self):
+        pass
     #     frequency()
-    # do_freq = do_f = do_frequency
+    do_freq = do_f = do_frequency
     ## END DO_ FXNS ##
     ## END DO_ FXNS ##
     ## END DO_ FXNS ##
@@ -367,21 +369,24 @@ class ExerThing(cmd.Cmd):
 
     def addNotesLine(self, line):
         if self.testDirIsNull() or self.testWorkoutIsNull():
-            return
-        with open(self.WORKOUT_FILEDIR, "a") as f:
-            f.write(f"// {line}\n")
-        return
+            return False
+        try:
+            with open(self.WORKOUT_FILEDIR, "a") as f:
+                f.write(f"// {line}\n")
+        except Exception as e:
+            return False
+        return True
     
     def testDirIsNull(self):
         if self.WORKOUT_DIR is None:
-            print("Must initialize workout directory with 'init' first!")
+            print("\nMust initialize workout directory with [cyan bold]init[/cyan bold] first!\n")
             return True
         else:
             return False
     
     def testWorkoutIsNull(self):
         if self.WORKOUT_FILEDIR is None:
-            print("Must begin/continue a workout with 'begin'/'continue' !")
+            print("\nMust begin/continue a workout with [cyan bold]begin[/cyan bold] or [cyan bold]continue[/cyan bold]!\n")
             return True
         else:
             return False
@@ -447,63 +452,97 @@ class ExerThing(cmd.Cmd):
     ### BEGIN HELP FXNS ###
 
     def help_begin(self):
-        print("Begin a new workout. Optionally provide a title.")
-        print("Usage: begin [title]")
-        print("Alias: b")
+        print("[bold]Begin a new workout.[/bold] Optionally provide a title.")
+        print("[cyan]Usage:[/cyan] begin [orange3]<title>[/orange3]")
+        print("[cyan]Alias:[/cyan] b")
+        print("")
 
     def help_init(self):
-        print("Initialize the workouts directory.")
-        print("Usage: init [y/n]")
+        print("[bold]Initialize the workouts directory.[/bold]")
+        print("[cyan]Usage:[/cyan] init [orange3]<y/n>[/orange3]")
+        print("")
 
     def help_continue(self):
-        print("Resume a recent workout or exercise within current workout.")
-        print("Usage: continue [exercise_name]")
-        print("Alias: c, cont")
+        print("[bold]Resume a recent workout or exercise within current workout.[/bold]")
+        print("[cyan]Usage:[/cyan] continue [italic](Outside Workout)[/italic]")
+        print("[cyan]Usage:[/cyan] continue [orange3]<exercise_name>[/orange3] [italic](Inside Workout)[/italic]")
+        print("[cyan]Alias:[/cyan] c, cont")
+        print("")
 
     def help_exit(self):
-        print("Step back in hierarchy (exercise → workout → shell) or exit.")
-        print("Alias: done, d, q, EOF")
+        print("[bold]Step back in hierarchy (exercise → workout → shell) or exit.[/bold]")
+        print("[cyan]Alias:[/cyan] done, d, q, EOF")
+        print("")
 
     def help_log(self):
-        print("Begin logging an exercise. Creates new or resumes existing.")
-        print("Usage: log <exercise-name>")
+        print("[bold]Begin logging an exercise.[/bold] Creates new or resumes existing.")
+        print("[cyan]Usage:[/cyan] log [orange3]<exercise-name>[/orange3]")
+        print("")
 
     def help_list(self):
-        print("List workouts. Optionally pass a number to limit results.")
-        print("Usage: list [n]")
+        print("[bold]List workouts.[/bold] Optionally pass a number to limit results.")
+        print("[cyan]Usage:[/cyan] list [orange3]<n>[/orange3]")
+        print("")
 
     def help_last(self):
-        print("Show last N instances of current exercise.")
-        print("Usage: last [n]")
+        print("[bold]Show last N instances of current exercise.[/bold]")
+        print("[cyan]Usage:[/cyan] last [orange3]<n>[/orange3]")
+        print("")
 
     def help_set_unit(self):
-        print("Set weight unit to kilos or pounds.")
-        print("Usage: set_unit <k/kg/kilo | p/lb/lbs/pound>")
+        print("[bold]Set weight unit to kilos or pounds.[/bold]")
+        print("[cyan]Usage:[/cyan] set_unit [orange3] k/kg/kilo | p/lb/lbs/pound [/orange3]")
+        print("")
 
     def help_summary(self):
-        print("Print full contents of current workout file.")
-        print("Usage: summary")
-        print("Alias: sum")
+        print("[bold]Print full contents of current workout file.[/bold]")
+        print("[cyan]Usage:[/cyan] summary")
+        print("[cyan]Alias:[/cyan] sum, s")
+        print("")
 
     def help_history(self):
-        print("Get history of all workouts for a given exercise.")
-        print("Usage: history [exercise_name]")
-        print("Alias: hist, h")
-    
+        print("[bold]Show history of all workouts for an exercise.[/bold]")
+        print("[cyan]Usage:[/cyan] history [orange3]<exercise_name>[/orange3]")
+        print("[cyan]Alias:[/cyan] hist, h")
+        print("")
+
     def help_frequency(self):
-        print("Get frequency of your workouts.")
-        print("Usage: frequency")
-        print("Alias: freq, f")
-    
+        print("[bold]Get frequency of your workouts.[/bold]")
+        print("[cyan]Usage:[/cyan] frequency")
+        print("[cyan]Alias:[/cyan] freq, f")
+        print("")
+
     def help_pr(self):
-        print("Show all-time personal record for current exercise.")
-        print("Usage: pr <exercise_name>")
+        print("[bold]Show all-time personal record for an exercise.[/bold]")
+        print("[cyan]Usage:[/cyan] pr [orange3]<exercise_name>[/orange3]")
+        print("")
+
+    def help_help(self):
+        self.do_help("")
     
-    def help_history(self):
-        print("Show history of all workouts for current exercise.")
-        print("Usage: history <exercise_name>")
-        print("Alias: hist, h")
-    
+    def do_help(self, arg):
+        print("")
+        if arg:
+            # If specific command help is requested, use default behavior
+            return super().do_help(arg)
+        else:
+            # Otherwise, show custom help message
+            print("[bold underline]Available Commands:[/bold underline]")
+            print(" - [cyan]init[/cyan]: Initialize workouts directory.")
+            print(" - [cyan]begin [title][/cyan]: Start a new workout with optional title.")
+            print(" - [cyan]continue [exercise_name][/cyan]: Resume a recent workout or exercise.")
+            print(" - [cyan]log <exercise-name>[/cyan]: Begin logging an exercise.")
+            print(" - [cyan]list [n][/cyan]: List workouts, optionally limit to n most recent.")
+            print(" - [cyan]last [n][/cyan]: Show last n instances of current exercise.")
+            print(" - [cyan]set_unit k/kg/p/kilo | p/lb/lbs/p/pound [/cyan]: Set weight unit.")
+            print(" - [cyan]summary[/cyan]: Print full contents of current workout file.")
+            print(" - [cyan]history <exercise_name>[/cyan]: Get history of all workouts for an exercise.")
+            print(" - [cyan]pr <exercise_name>[/cyan]: Show all-time personal record for an exercise.")
+            print(" - [cyan]frequency[/cyan]: Get frequency of your workouts.")
+            print(" - [cyan]exit[/cyan]: Step back in hierarchy or exit.")
+            print(" - [cyan]// <...>[/cyan]: Adds following information as a note to the workout file.")
+            print("Type 'help <command>' for more details on a specific command.")
+        print("")
     help_hist = help_h = help_history
     help_f = help_freq = help_frequency
     help_b = help_begin
