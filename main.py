@@ -9,15 +9,23 @@ from rich.table import Table
 from rich.text import Text
 from parser import parse
 
-A = "#7a153d"
-B = "#b22b4e" 
-C = "#c53648"
-D = "#d94c3a"
 
-Z = "#f4e1c1"
-Y = "#f9c8a5"
-X = "#f6a76f"
-W = "#f57b2a"
+# IF MAC
+try:
+    import readline
+    readline.parse_and_bind("bind ^I rl_complete")
+except ImportError:
+    pass
+
+# A = "#7a153d"
+# B = "#b22b4e" 
+# C = "#c53648"
+# D = "#d94c3a"
+
+# Z = "#f4e1c1"
+# Y = "#f9c8a5"
+# X = "#f6a76f"
+# W = "#f57b2a"
 
 
 promptDefault = "ExerThing"
@@ -83,7 +91,11 @@ class ExerThing(cmd.Cmd):
         if self.WORKOUT_DIR is None:
             doCreate = "" if arg.strip() == "" else arg.strip().lower()
             if doCreate == "":
-                doCreate = input("No 'workouts' directory found. Create one? (y/n) ")
+                try:
+                    doCreate = input("No 'workouts' directory found. Create one? (y/n) ")
+                except EOFError:
+                    print("Cannot continue without workouts directory.")
+                    return
             if doCreate.lower() == "n":
                 print("Cannot continue without workouts directory.")
                 return
@@ -101,7 +113,11 @@ class ExerThing(cmd.Cmd):
         user_title = arg.strip() if arg else ""
         dt = datetime.datetime.now().strftime("%m_%d_%Y")
         local_name = dt + ":" + user_title if user_title else dt
-        doCreate = input(f"Start Workout \"{local_name}\"? (y/n) ")
+        try:
+            doCreate = input(f"Start Workout \"{local_name}\"? (y/n) ")
+        except EOFError:
+            print("Begin cancelled.")
+            return
         if doCreate.lower() == "n":
             return
         if doCreate.lower() == "y":
@@ -150,7 +166,11 @@ class ExerThing(cmd.Cmd):
             if i <= 0:
                 print("No exercises found")
                 return
-            choice = input("Enter exercise number: ") 
+            try:
+                choice = input("Enter exercise number: ") 
+            except EOFError:
+                print("Continue Exercise Cancelled.")
+                return
             if choice.isdigit() and int(choice) in iToExerName:
                 self.do_continue(iToExerName[int(choice)])
             else:
@@ -166,8 +186,15 @@ class ExerThing(cmd.Cmd):
         files = files[:5]
         for i in range(len(files)):
             COL = A if i % 2 == 0 else C
-            print(f"[{i}] [{COL}]{files[i]}[/{COL}]")        
-        choice = input("Enter workout number: ")
+            print(f"[{i}] [{COL}]{files[i]}[/{COL}]")
+
+        
+        try:
+            choice = input("Enter workout number: ")
+        except EOFError:
+            print("Continue Cancelled.")
+            return
+        
         if choice.isdigit() and int(choice) in range(len(files)):
             self.WORKOUT_FILEDIR = os.path.join(self.WORKOUT_DIR, files[int(choice)])
             self.WORKOUT_FNAME = files[int(choice)]
@@ -201,7 +228,11 @@ class ExerThing(cmd.Cmd):
         # IF LOG ALR EXISTS
         spot = self.exerExistsWriteLoc(exerName)
         if spot != -1:
-            choice = input(f"Exercise {exerName} already exists, continue? (y/n) ")
+            try:
+                choice = input(f"Exercise {exerName} already exists, continue? (y/n) ")
+            except EOFError:
+                print("Log cancelled.")
+                return
             if choice.lower() == "y":
                 self.EXER_WRITE_AT = spot
                 self.EXER_NAME = exerName
@@ -307,9 +338,10 @@ class ExerThing(cmd.Cmd):
             return True  # Returning True exits the loop
     do_EOF = do_done = do_d = do_q = do_exit
 
-    def do_frequency(self):
-        frequency()
-    do_freq = do_f = do_frequency
+    # def do_frequency(self):
+    #     pass
+    #     frequency()
+    # do_freq = do_f = do_frequency
     ## END DO_ FXNS ##
     ## END DO_ FXNS ##
     ## END DO_ FXNS ##
@@ -458,11 +490,36 @@ class ExerThing(cmd.Cmd):
         print("Usage: history [exercise_name]")
         print("Alias: hist, h")
     
+    def help_frequency(self):
+        print("Get frequency of your workouts.")
+        print("Usage: frequency")
+        print("Alias: freq, f")
+    
+    def help_pr(self):
+        print("Show all-time personal record for current exercise.")
+        print("Usage: pr <exercise_name>")
+    
+    def help_history(self):
+        print("Show history of all workouts for current exercise.")
+        print("Usage: history <exercise_name>")
+        print("Alias: hist, h")
+    
+    help_hist = help_h = help_history
+    help_f = help_freq = help_frequency
     help_b = help_begin
     help_c = help_cont = help_continue
     help_d = help_done = help_q = help_EOF = help_exit
     help_s = help_sum = help_summary
     help_set = help_set_unit
+
+    ## DO COMPLETE FXNS ##
+    def complete_last(self, text, line, begidx, endidx):
+        return [e for e in EXERCISE_LIST if e.startswith(text)]
+    
+    complete_pr = complete_history = complete_log = complete_last
+    
+    
+
 
 if __name__ == "__main__":
     try:

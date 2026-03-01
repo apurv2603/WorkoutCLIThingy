@@ -8,6 +8,13 @@ from rich.text import Text
 
 import os
 
+# EXPORT 
+EXERCISE_LIST = ["squat", "bench-press", "deadlift", 
+                "overhead-press", "barbell-row", "pull-up", "dip", "lunge", "leg-press", "leg-curl", 
+                "leg-ext", "calf-raise", "bicep-curl", "shoulder-press", "pull-up", "chin-up",
+                "tricep-ext", "shoulder-fly", "lat-pulldown", "chest-fly", "db-row", "db-press", "db-curl", "db-lat-raise"]
+# EXPORT
+MUSCLE_GROUPS = ["legs", "chest", "back", "shoulders", "arms", "core"]
 
 A = "#7a153d"
 B = "#b22b4e", 
