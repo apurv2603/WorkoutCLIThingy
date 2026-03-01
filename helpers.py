@@ -174,8 +174,15 @@ def last(workouts: list[Workout], exercise: str):
                 t.add_column("#")
                 t.add_column("Reps")
                 t.add_column("Weight")
-                for i, set in enumerate(item.sets):
-                    t.add_row(str(i+1), str(set.reps), str(set.weight) + " " + workout.unit)
+                max_weight = max(st.weight for st in item.sets) if item.sets else 0
+                for i, st in enumerate(item.sets):
+                    repColor = rep_to_color(st.reps)
+                    repStr = f"[{repColor}]{st.reps}[/{repColor}]"
+
+                    weightColor = weight_to_color(st.weight, max(max_weight, st.weight))
+                    weightStr = f"[{weightColor}]{st.weight}[/{weightColor}]"
+
+                    t.add_row(str(i+1), repStr, weightStr)
                 print(t)
                 print(f"Last workout with {exercise} was on {workout.date} at {workout.time}")
 
