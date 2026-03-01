@@ -365,10 +365,10 @@ class ExerThing(cmd.Cmd):
             return True  # Returning True exits the loop
     do_EOF = do_done = do_d = do_q = do_exit
 
-    def do_frequency(self):
-        pass
+    # def do_frequency(self):
+    #     pass
     #     frequency()
-    do_freq = do_f = do_frequency
+    # do_freq = do_f = do_frequency
     ## END DO_ FXNS ##
     ## END DO_ FXNS ##
     ## END DO_ FXNS ##
@@ -535,11 +535,11 @@ class ExerThing(cmd.Cmd):
         print("[cyan]Alias:[/cyan] hist, h")
         print("")
 
-    def help_frequency(self):
-        print("[bold]Get frequency of your workouts.[/bold]")
-        print("[cyan]Usage:[/cyan] frequency")
-        print("[cyan]Alias:[/cyan] freq, f")
-        print("")
+    # def help_frequency(self):
+    #     print("[bold]Get frequency of your workouts.[/bold]")
+    #     print("[cyan]Usage:[/cyan] frequency")
+    #     print("[cyan]Alias:[/cyan] freq, f")
+    #     print("")
 
     def help_pr(self):
         print("[bold]Show all-time personal record for an exercise.[/bold]")
@@ -573,14 +573,14 @@ class ExerThing(cmd.Cmd):
             print(" - [cyan]summary[/cyan]: Print full contents of current workout file.")
             print(" - [cyan]history <exercise_name>[/cyan]: Get history of all workouts for an exercise.")
             print(" - [cyan]pr <exercise_name>[/cyan]: Show all-time personal record for an exercise.")
-            print(" - [cyan]frequency[/cyan]: Get frequency of your workouts.")
+            # print(" - [cyan]frequency[/cyan]: Get frequency of your workouts.")
             print(" - [cyan]exit[/cyan]: Step back in hierarchy or exit.")
             print(" - [cyan]render[/cyan]: Render workout to HTML.")
             print(" - [cyan]// <...>[/cyan]: Adds following information as a note to the workout file.")
             print("Type 'help <command>' for more details on a specific command.")
         print("")
     help_hist = help_h = help_history
-    help_f = help_freq = help_frequency
+    # help_f = help_freq = help_frequency
     help_b = help_begin
     help_c = help_cont = help_continue
     help_d = help_done = help_q = help_EOF = help_exit
