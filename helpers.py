@@ -169,6 +169,7 @@ def history(workouts: list[Workout], exercise: str):
         tableList.append(tab)
         if len(tableList) == 4 or i == len(tables) - 1:
             st.add_row(*tableList)
+    print("")
     print(st)
     return
 

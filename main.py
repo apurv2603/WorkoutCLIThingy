@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from parser import parse
-
+from parse_to_html import render_and_open
 
 # Sometimes fixes mac autocomp. Sometimes breaks keyboard input.
 try:
@@ -136,6 +136,32 @@ class ExerThing(cmd.Cmd):
             self.WORKOUT_ABBR = user_title if user_title else dt
             self.updatePrompt()
     do_b = do_begin
+
+    def do_render(self, arg):
+        if self.testDirIsNull():
+            return
+        argNum = parse_num(arg)
+        files = os.listdir(self.WORKOUT_DIR) if self.WORKOUT_DIR is not None else []
+        N = len(files)
+        if N == 0:
+            print("No workouts found in workouts directory. Use 'begin' or 'begin <workout_name>' to start a workout.")
+            return
+        files.sort(key=lambda f: datetime.datetime.strptime((f.split(".")[0]).split(":")[0], "%m_%d_%Y"), reverse=True)
+        files = files[:argNum] if argNum > 0 and argNum < N else files
+        for i in range(len(files)):
+            COL = A if i % 2 == 0 else C
+            print(f"[{i}] [{COL}]{files[i]}[/{COL}]")
+        
+        try:
+            choice = input("Enter workout number: ")
+        except EOFError:
+            print("Render Cancelled.")
+            return
+        
+        if choice.isdigit() and int(choice) in range(len(files)):
+            workout_filedir = os.path.join(self.WORKOUT_DIR, files[int(choice)])
+            render_and_open(workout_filedir)
+    do_r = do_rend = do_render
 
     def do_continue(self, arg):
         # IF NOT IN A DIR AT ALL
@@ -516,6 +542,12 @@ class ExerThing(cmd.Cmd):
         print("[bold]Show all-time personal record for an exercise.[/bold]")
         print("[cyan]Usage:[/cyan] pr [orange3]<exercise_name>[/orange3]")
         print("")
+    
+    def help_render(self):
+        print("[bold]Render current workout to HTML.[/bold]")
+        print("[cyan]Usage:[/cyan] render")
+        print("[cyan]Alias:[/cyan] rend, r")
+        print("")
 
     def help_help(self):
         self.do_help("")
@@ -550,6 +582,7 @@ class ExerThing(cmd.Cmd):
     help_d = help_done = help_q = help_EOF = help_exit
     help_s = help_sum = help_summary
     help_set = help_set_unit
+    help_r = help_rend = help_render
 
     ## DO COMPLETE FXNS ##
     def complete_last(self, text, line, begidx, endidx):
