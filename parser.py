@@ -1,7 +1,8 @@
 from __future__ import annotations
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
+WorkoutItem = Union["Exercise", "SuperSet"]
 class SetEntry:
     def __init__(self, reps: int, weight: float, unit: str = None):
         self.reps = reps
@@ -29,12 +30,13 @@ class SuperSet:
 
 class Workout:
     #TODO
-    def __init__(self, date: str , time: str, unit: str = "pounds", name: str = None, items= None):
+    def __init__(self, date: str , time: str, unit: str = "pounds", name: str = None, items: Optional[list[WorkoutItem]] = None, notes=None):
         self.name = name
         self.date = date
         self.time = time
         self.unit = unit
-        self.items = items 
+        self.items: list[WorkoutItem] = [] if items is None else items #this should be a list of exercises and supersets
+        self.notes = notes if notes is not None else []
     # Has Name, Units, Time?, Has exercises
 
 _SET_RE = re.compile(
@@ -187,7 +189,7 @@ def parse(file_path: str) -> Workout:
         s = raw.strip()
 
         # Notes: "note ..." or "note: ..."
-        if s.lower().startswith("note"):
+        if s.lower().startswith("//"):
             # Your classes do not store notes yet; ignore for now (per your current class set).
             # If you add notes later, we can attach it to workout/exercise/superset here.
             continue
@@ -236,6 +238,12 @@ def parse(file_path: str) -> Workout:
             if current_exercise is None:
                 raise ValueError(f"Line {line_no+1}: set with no active exercise: {s!r}")
             current_exercise.sets.append(_parse_set_line(s))
+            continue
+        if s.startswith("//"):
+            text = s[2:].strip()
+            # keep even empty notes if you want; usually better to skip empties
+            if text:
+                workout.notes.append(Note(text))
             continue
 
         raise ValueError(f"Line {line_no+1}: unrecognized syntax: {s!r}")

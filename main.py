@@ -1,7 +1,24 @@
 import cmd
+from importlib.metadata import files
 from helpers import *
 import os
 import datetime
+from rich import print as print #as rich_print
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+from parser import parse
+
+A = "#7a153d"
+B = "#b22b4e" 
+C = "#c53648"
+D = "#d94c3a"
+
+Z = "#f4e1c1"
+Y = "#f9c8a5"
+X = "#f6a76f"
+W = "#f57b2a"
+
 
 promptDefault = "ExerThing"
 SET_KEYWORD = ">"
@@ -13,6 +30,9 @@ class ExerThing(cmd.Cmd):
     EXER_NAME = None
     EXER_WRITE_AT = -1
     UNIT_ABBR = "lbs"
+
+    # doc_header = "Commands:"  # help header
+    # ruler = "="               # separator char in help
 
     def __init__(self):
         super().__init__()
@@ -26,9 +46,18 @@ class ExerThing(cmd.Cmd):
         my_intro = "\nWelcome to ExerThing!"
         my_intro += " Directory Init: ✅." if self.WORKOUT_DIR is not None else " Directory Init: ❌."
         my_intro += " Type help or ? to list commands."
-        print(my_intro)
+        print("[bold]" +  my_intro + "[/bold]" )
     
     def default(self, line):
+        if line.startswith("ls") or line.startswith("dir") or line.startswith("cd") or line.startswith("pwd") or line.startswith("clear") or line.startswith("cat"):
+            os.system(line)
+            return
+        # NOTES
+        if line.startswith("//"):
+            if self.addNotesLine(line[2:].strip()):
+                print("Added Note!")
+            return
+
         # LOG REPS AND WEIGHT
         line = line.lower().strip()
         if self.EXER_NAME is not None:
@@ -47,20 +76,7 @@ class ExerThing(cmd.Cmd):
         else:
             print(f"Unknown command: {line}")
     
-    def updatePrompt(self):
-        if self.WORKOUT_FILEDIR is None or self.WORKOUT_FNAME is None:
-            self.prompt = promptDefault + "> "
-            return
-        lst = self.WORKOUT_FNAME.split(':')
-        word2 = ""
-        if len(lst) > 1:
-            word2 = "*" +lst[-1].split(".")[0]
-        else:
-            word2 = self.WORKOUT_FNAME.split(".")[0]
-        if self.EXER_NAME is not None:
-            self.prompt = f"{promptDefault}/{word2}/{self.EXER_NAME}> "
-        else:
-            self.prompt = f"{promptDefault}/{word2}> "
+
     
     def do_init(self, arg):
         # Create workouts folder
@@ -127,10 +143,14 @@ class ExerThing(cmd.Cmd):
                 lines = f.readlines()
             for line in lines:
                 if line.startswith("# "):
-                    print(f"[{i}] {line[2:].strip()}")
+                    COL = A if i % 2 == 0 else C
+                    print(f"[{i}] [{COL}]{line[2:].strip()}[/{COL}]")
                     iToExerName[i] = line[2:].strip()
                     i += 1
-            choice = input("Enter exercise number: ")
+            if i <= 0:
+                print("No exercises found")
+                return
+            choice = input("Enter exercise number: ") 
             if choice.isdigit() and int(choice) in iToExerName:
                 self.do_continue(iToExerName[int(choice)])
             else:
@@ -145,7 +165,8 @@ class ExerThing(cmd.Cmd):
         files.sort(key=lambda f: datetime.datetime.strptime((f.split(".")[0]).split(":")[0], "%m_%d_%Y"), reverse=True)
         files = files[:5]
         for i in range(len(files)):
-            print(f"[{i}] {files[i]}")        
+            COL = A if i % 2 == 0 else C
+            print(f"[{i}] [{COL}]{files[i]}[/{COL}]")        
         choice = input("Enter workout number: ")
         if choice.isdigit() and int(choice) in range(len(files)):
             self.WORKOUT_FILEDIR = os.path.join(self.WORKOUT_DIR, files[int(choice)])
@@ -189,23 +210,16 @@ class ExerThing(cmd.Cmd):
             else:
                 print("Log cancelled.")
                 return
-            
         
         # ELSE CREATE NEW LOG
-        self.createNewExer(exerName)
-    
-    def do_last(self, arg):
-        # Get last case of exercise ARG[0]
-        if self.testDirIsNull() or self.testWorkoutIsNull():
-            return
-        num = parse_num(arg)
-        print("Last ", num)
-    
+        if spot < 0:
+            self.createNewExer(exerName)
+        
     def do_set_unit(self, arg):
         if self.testDirIsNull() or self.testWorkoutIsNull():
             return
         if arg is None or arg.strip() == "":
-            print("No unit provided, use 'kilo' or 'pound'")
+            print("Usage: set_unit <k/kg/kilo | p/lb/lbs/pound>")
             return
         arg0 = arg.strip().lower()
         if arg0 == "k" or arg0 == "kg" or arg0 == "kilo" or arg0 == "kilos":
@@ -217,38 +231,115 @@ class ExerThing(cmd.Cmd):
             self.UNIT_ABBR = "lbs"
             return
         else:
-            print("Unknown unit, use 'k/kilos' or 'p/pounds'")
+            print("Usage: set_unit <k/kg/kilo | p/lb/lbs/pound>")
+    do_set = do_set_unit
+
+    def do_last(self, arg):
+        if self.testDirIsNull():
+            return
+        exerName = parse_exer(arg)
+        if exerName == "":
+            print("Invalid exercise name.")
+            return
+        workouts = []
+        files = os.listdir(self.WORKOUT_DIR)
+        files.sort(key=lambda f: datetime.datetime.strptime((f.split(".")[0]).split(":")[0], "%m_%d_%Y"))
+        for file in files:
+            workout = parse(os.path.join(self.WORKOUT_DIR, file))
+            workouts.append(workout)
+        last(workouts, exerName)
     
+    def do_pr(self, arg):
+        if self.testDirIsNull():
+            return
+        exerName = parse_exer(arg)
+        if exerName == "":
+            print("Invalid exercise name.")
+            return
+        workouts = []
+        files = os.listdir(self.WORKOUT_DIR)
+        for file in files:
+            workout = parse(os.path.join(self.WORKOUT_DIR, file))
+            workouts.append(workout)
+        pr(workouts, exerName)
+
+    def do_history(self, arg):
+        if self.testDirIsNull():
+            return
+        exerName = parse_exer(arg)
+        if exerName == "":
+            print("Invalid exercise name.")
+            return
+        workouts = []
+        files = os.listdir(self.WORKOUT_DIR)
+        files.sort(key=lambda f: datetime.datetime.strptime((f.split(".")[0]).split(":")[0], "%m_%d_%Y"))
+        for file in files:
+            workout = parse(os.path.join(self.WORKOUT_DIR, file))
+            workouts.append(workout)
+        history(workouts, exerName)
+    do_h = do_hist = do_history
+    
+    
+
     def do_summary(self, arg):
-        # Get last ARG[0] workout, If Arg[0] is None, Arg = 0
         if self.testDirIsNull() or self.testWorkoutIsNull():
             return
-        # num = parse_num(arg)
-        with open(self.WORKOUT_FILEDIR, "r") as f:
-            lines = f.readlines()
-            print("".join(lines))
-    do_sum = do_summary
-    
+
+        workout = parse(self.WORKOUT_FILEDIR)  # your parser
+        summary(workout)
+    do_s = do_sum = do_summary
+
     def do_exit(self, arg):
         # Take a step down in the hierarchy, or exit if at base level
         if self.EXER_NAME is not None:
             print(f"Leaving Exercise {self.EXER_NAME}...")
             self.EXER_NAME = None
             self.updatePrompt()
+            return
         elif self.WORKOUT_FILEDIR is not None:
             self.WORKOUT_FILEDIR = None
             self.WORKOUT_FNAME = None
             self.updatePrompt()
             print("Leaving Workout...")
+            return
         else:
             print("Exiting...")
             return True  # Returning True exits the loop
     do_EOF = do_done = do_d = do_q = do_exit
 
+    def do_frequency(self):
+        frequency()
+    do_freq = do_f = do_frequency
+    ## END DO_ FXNS ##
+    ## END DO_ FXNS ##
+    ## END DO_ FXNS ##
+
+    def updatePrompt(self):
+        if self.WORKOUT_FILEDIR is None or self.WORKOUT_FNAME is None:
+            self.prompt = promptDefault + "> "
+            return
+        lst = self.WORKOUT_FNAME.split(':')
+        word2 = ""
+        if len(lst) > 1:
+            word2 = "*" +lst[-1].split(".")[0]
+        else:
+            word2 = self.WORKOUT_FNAME.split(".")[0]
+        if self.EXER_NAME is not None:
+            self.prompt = f"{promptDefault}/{word2}/{self.EXER_NAME}> "
+        else:
+            self.prompt = f"{promptDefault}/{word2}> "
+    
     def emptyline(self):
         # On enter reshow prompt and do nothing
         pass
 
+    def addNotesLine(self, line):
+        if self.testDirIsNull() or self.testWorkoutIsNull():
+            return
+        with open(self.WORKOUT_FILEDIR, "a") as f:
+            f.write(f"// {line}\n")
+        return
+    
     def testDirIsNull(self):
         if self.WORKOUT_DIR is None:
             print("Must initialize workout directory with 'init' first!")
@@ -258,11 +349,11 @@ class ExerThing(cmd.Cmd):
     
     def testWorkoutIsNull(self):
         if self.WORKOUT_FILEDIR is None:
-            print("Must begin a workout with 'begin' first!")
+            print("Must begin/continue a workout with 'begin'/'continue' !")
             return True
         else:
             return False
-        
+    
     def exerExistsWriteLoc(self, exerName):
         if self.WORKOUT_FILEDIR is None:
             return -1
@@ -271,7 +362,6 @@ class ExerThing(cmd.Cmd):
         spot = -1
         find = ("# " + exerName)
         for i, line in enumerate(lines):
-            print(i, line)
             if find in line:
                 spot = i
                 break
@@ -279,8 +369,6 @@ class ExerThing(cmd.Cmd):
             # Get to line to write at next
             while spot < len(lines) and (lines[spot] != "\n"): # lines[spot].startswith(SET_KEYWORD) or lines[spot].startswith("# ")
                 spot += 1
-        
-        print(f"Exercise {exerName} exists at line {spot} in workout file.") if spot != -1 else print(f"Exercise {exerName} does not exist in workout file.")
         return spot
     
     def getNotesLines(self):
@@ -295,13 +383,12 @@ class ExerThing(cmd.Cmd):
         return notesLines
     
     def createNewExer(self, exerName):
-
         notesLines = self.getNotesLines()
         newLine0 = f"\n"
         newLine1 = f"# {exerName}\n"
         with open(self.WORKOUT_FILEDIR, "r") as f:
             lines = f.readlines()
-            insertAt = notesLines[0] if len(notesLines) > 0 else len(lines)
+            insertAt = notesLines[0] - 1 if len(notesLines) > 0 else len(lines)
         
         lines.insert(insertAt, newLine0)
         lines.insert(insertAt + 1, newLine1)
@@ -322,7 +409,60 @@ class ExerThing(cmd.Cmd):
 
         with open(self.WORKOUT_FILEDIR, "w") as f:
             f.writelines(lines)
-        
+    
+    ### BEGIN HELP FXNS ###
+    ### BEGIN HELP FXNS ###
+    ### BEGIN HELP FXNS ###
+
+    def help_begin(self):
+        print("Begin a new workout. Optionally provide a title.")
+        print("Usage: begin [title]")
+        print("Alias: b")
+
+    def help_init(self):
+        print("Initialize the workouts directory.")
+        print("Usage: init [y/n]")
+
+    def help_continue(self):
+        print("Resume a recent workout or exercise within current workout.")
+        print("Usage: continue [exercise_name]")
+        print("Alias: c, cont")
+
+    def help_exit(self):
+        print("Step back in hierarchy (exercise → workout → shell) or exit.")
+        print("Alias: done, d, q, EOF")
+
+    def help_log(self):
+        print("Begin logging an exercise. Creates new or resumes existing.")
+        print("Usage: log <exercise-name>")
+
+    def help_list(self):
+        print("List workouts. Optionally pass a number to limit results.")
+        print("Usage: list [n]")
+
+    def help_last(self):
+        print("Show last N instances of current exercise.")
+        print("Usage: last [n]")
+
+    def help_set_unit(self):
+        print("Set weight unit to kilos or pounds.")
+        print("Usage: set_unit <k/kg/kilo | p/lb/lbs/pound>")
+
+    def help_summary(self):
+        print("Print full contents of current workout file.")
+        print("Usage: summary")
+        print("Alias: sum")
+
+    def help_history(self):
+        print("Get history of all workouts for a given exercise.")
+        print("Usage: history [exercise_name]")
+        print("Alias: hist, h")
+    
+    help_b = help_begin
+    help_c = help_cont = help_continue
+    help_d = help_done = help_q = help_EOF = help_exit
+    help_s = help_sum = help_summary
+    help_set = help_set_unit
 
 if __name__ == "__main__":
     try:
