@@ -397,7 +397,7 @@ class ExerThing(cmd.Cmd):
             return False
         try:
             with open(self.WORKOUT_FILEDIR, "a") as f:
-                f.write(f"// {line}\n")
+                f.write(f"\n// {line}")
         except Exception as e:
             return False
         return True
