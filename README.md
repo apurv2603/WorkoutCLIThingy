@@ -11,12 +11,16 @@ useful functions:
  exists
 
  # Command ideas
- - `Summarize` prints the workout in a readable format
- - `list` just lists the exercises for that specific file
+- `Summarize` prints the workout in a readable format
+- `last X` returns last time exercise X was done and details of that exercise
  - `pr X` gives the pr for exercise X
- - `last X` returns last time exercise X was done and details of that exercise
- -  `history X` prints history for exercise X
- - `muscles X.workout` prints the muscles groups used in session X
+-  `history X` prints history for exercise X
+
+
+
  - `progress X` prints a graph that plots weight lifted against time for exercise X
     - maybe this can be done be generating a png graph and then opening it to display
 - some sort of command to see your consistency as a glance
+
+# Ignored commands
+- `muscles X.workout` prints the muscles groups used in session X

@@ -222,12 +222,11 @@ def parse(file_path: str) -> Workout:
             mg_name = s[1:].strip()
             if not mg_name:
                 raise ValueError(f"Line {line_no+1}: empty muscle group.")
-            # You said one muscle group per exercise
+            # One MG per exercise
             parts = s.split()  # split by whitespace
             for part in parts:
                 if not part.startswith("#") or part.startswith("# "):
                     raise ValueError(f"Line {line_no+1}: invalid muscle group token: {part!r}")
-
                 mg_name = part[1:].strip()
                 if not mg_name:
                     raise ValueError(f"Line {line_no+1}: empty muscle group token in: {s!r}")

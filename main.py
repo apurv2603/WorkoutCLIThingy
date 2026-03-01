@@ -57,7 +57,7 @@ class ExerThing(cmd.Cmd):
             if self.addNotesLine(line[2:].strip()):
                 print("Added Note!")
             return
-
+        
         # LOG REPS AND WEIGHT
         line = line.lower().strip()
         if self.EXER_NAME is not None:
