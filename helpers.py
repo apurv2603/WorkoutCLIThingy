@@ -45,11 +45,11 @@ def rep_to_color(reps):
         return light_green
 
 def weight_to_color(weight, weight_max):
-    if weight <= 0.25 * weight_max:
+    if weight <= 0.70 * weight_max:
         return light_red
-    elif weight <= 0.5 * weight_max:
+    elif weight <= 0.80 * weight_max:
         return light_orange
-    elif weight <= 0.75 * weight_max:
+    elif weight <= 0.90 * weight_max:
         return light_yellow
     else:
         return light_green
@@ -134,7 +134,14 @@ def history(workouts: list[Workout], exercise: str):
         print("no exercise given")
         return
     tables = []
+    
     for wrkout in workouts:
+        max_weight = 0
+        for item in wrkout.items:
+            if isinstance(item, Exercise) and item.name == exercise:
+                for st in item.sets:
+                    if st.weight > max_weight:
+                            max_weight = st.weight
         for item in wrkout.items:
             if isinstance(item, Exercise) and item.name == exercise:
                 t = Table(title=f"{wrkout.date}")
@@ -142,7 +149,14 @@ def history(workouts: list[Workout], exercise: str):
                 t.add_column("Reps")
                 t.add_column("Weight")
                 for i, st in enumerate(item.sets):
-                    t.add_row(str(i+1), str(st.reps), str(st.weight) + " " + wrkout.unit)
+                    repColor = rep_to_color(st.reps)
+                    repStr = f"[{repColor}]{st.reps}[/{repColor}]"
+
+                    weightColor = weight_to_color(st.weight, max_weight)
+                    weightStr = f"[{weightColor}]{st.weight}[/{weightColor}]"
+
+                    t.add_row(str(i+1), repStr, weightStr)
+
                 tables.append(t)
     st = Table(title="[bold underline]"+exercise+" History[/bold underline]\n", show_header=False, show_edge=False, show_lines=False, box=None)
     tableList = []

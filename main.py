@@ -555,7 +555,7 @@ class ExerThing(cmd.Cmd):
     def complete_last(self, text, line, begidx, endidx):
         return [e for e in EXERCISE_LIST if e.startswith(text)]
     
-    complete_pr = complete_history = complete_log = complete_last
+    complete_pr = complete_history = complete_hist = complete_log = complete_last
     
     
 
